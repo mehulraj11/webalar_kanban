@@ -1,49 +1,50 @@
 import Section from '../models/SectionSchema.js';
 
-export const registerSectionHandlers = (socket, io) => {
-  socket.on("section:get", async () => {
+export const getSections = async (data, callback, socket) => {
     try {
-      const sections = await Section.find().populate("tasks").sort({ createdAt: 1 });
-      socket.emit("section:list", sections);
+        const sections = await Section.find().populate("tasks").sort({ createdAt: 1 });
+        callback(sections);
     } catch (err) {
-      socket.emit("error", "Error fetching sections");
+        socket.emit("error", "Error fetching sections");
     }
-  });
+};
 
-  socket.on("section:add", async ({ name, selectedSectionId }) => {
+export const addSection = async ({ name, selectedSectionId }, callback, socket, io) => {
     try {
-      let creationDate = new Date();
+        let creationDate = new Date();
 
-      if (selectedSectionId) {
-        const selectedSection = await Section.findById(selectedSectionId);
-        if (selectedSection) {
-          creationDate = new Date(new Date(selectedSection.createdAt).getTime() + 1000);
+        if (selectedSectionId) {
+            const selectedSection = await Section.findById(selectedSectionId);
+            if (selectedSection) {
+                creationDate = new Date(new Date(selectedSection.createdAt).getTime() + 1000);
+            }
         }
-      }
 
-      const newSection = new Section({ name, tasks: [], createdAt: creationDate });
-      await newSection.save();
-      io.emit("section:added", newSection);
+        const newSection = new Section({ name, tasks: [], createdAt: creationDate });
+        await newSection.save();
+        io.emit("section:added", newSection);
+        callback(newSection);
     } catch (err) {
-      socket.emit("error", "Error adding section");
+        socket.emit("error", "Error adding section");
     }
-  });
+};
 
-  socket.on("section:delete", async (id) => {
+export const deleteSection = async (id, callback, socket, io) => {
     try {
-      await Section.findByIdAndDelete(id);
-      io.emit("section:deleted", id);
+        await Section.findByIdAndDelete(id);
+        io.emit("section:deleted", id);
+        callback(id);
     } catch (err) {
-      socket.emit("error", "Error deleting section");
+        socket.emit("error", "Error deleting section");
     }
-  });
+};
 
-  socket.on("section:update", async ({ id, name }) => {
+export const updateSection = async ({ id, name }, callback, socket, io) => {
     try {
-      const updated = await Section.findByIdAndUpdate(id, { name }, { new: true });
-      io.emit("section:updated", updated);
+        const updated = await Section.findByIdAndUpdate(id, { name }, { new: true });
+        io.emit("section:updated", updated);
+        callback(updated);
     } catch (err) {
-      socket.emit("error", "Error updating section");
+        socket.emit("error", "Error updating section");
     }
-  });
 };
