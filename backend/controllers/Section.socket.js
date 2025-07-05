@@ -1,4 +1,4 @@
-import Section from './section.model.js';
+import Section from '../models/SectionSchema.js';
 
 export const registerSectionHandlers = (socket, io) => {
   socket.on("section:get", async () => {
