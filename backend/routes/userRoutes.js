@@ -11,7 +11,7 @@ const userRouter = express.Router();
 
 // Routes
 userRouter.post("/signup", signup);
-userRouter.post("/login", login);
+userRouter.post("/signin", login);
 userRouter.get("/count", getCount);
 userRouter.get("/me", jwtAuth, getCurrentUser);
 

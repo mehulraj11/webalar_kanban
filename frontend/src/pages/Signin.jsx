@@ -1,82 +1,78 @@
-import  { useState } from "react";
-import "../styles/signin.css";
-import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-
-function Signin() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-  const [error, setError] = useState("");
+import "../styles/auth.css";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+const Signin = ({ signinDetails, setSigninDetails }) => {
   const navigate = useNavigate();
-
   const handleChange = (e) => {
-    setFormData((prev) => ({
+    const { name, value } = e.target;
+    setSigninDetails((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [name]: value,
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSignin = async (e) => {
     e.preventDefault();
-    setError("");
-
     try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", formData);
-      const { token, user } = res.data;
+      const res = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/auth/signin`,
+        signinDetails 
+      );
 
+      const { token, user } = res.data;
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      navigate("/mainpage");
-    } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Login error:", error);
+      alert(error.response?.data?.message || "Login failed. Please try again.");
     }
   };
-
   return (
-    <div className="app-wrapper">
-      <div className="helpdesk-container">
-        <h1 className="helpdesk-title">Helpdesk System</h1>
+    <div className="auth-container">
+      <div className="auth-card">
+        <h1 className="auth-title">Login</h1>
 
-        <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-
-          <button type="submit" style={{ backgroundColor: "green" }}>
-            Sign In
-          </button>
-
-          <div className="redirect">
-            <Link to="/signup" style={{ color: "black" }}>
-              Sign Up
-            </Link>
+        <form onSubmit={handleSignin} className="auth-form">
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              name="email"
+              value={signinDetails.email}
+              onChange={handleChange}
+              type="email"
+              id="email"
+              placeholder="Enter your email"
+              required
+            />
           </div>
 
-          {error && (
-            <p style={{ color: "red", marginTop: "15px", fontWeight: "bold" }}>
-              {error}
-            </p>
-          )}
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              name="password"
+              value={signinDetails.password}
+              onChange={handleChange}
+              type="password"
+              id="password"
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+
+          <button type="submit" className="auth-btn">
+            Sign In
+          </button>
         </form>
+
+        <div className="auth-footer">
+          Don't have an account? <Link to="/signup">Sign up</Link>
+        </div>
       </div>
     </div>
   );
-}
+};
 
 export default Signin;

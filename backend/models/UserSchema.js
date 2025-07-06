@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const UserSchema = new mongoose.Schema({
-    name: {
+    fullname: {
         type: String,
         required: true,
     },
@@ -9,11 +9,14 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
-        match: [/.+\@.+\..+/, "Please enter a valid email address"],
     },
     password: {
         type: String,
         required: true
+    },
+    isLogged: {
+        type: Boolean,
+        default: false
     },
 });
 

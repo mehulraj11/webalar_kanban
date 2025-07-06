@@ -1,22 +1,16 @@
-import React, { useState } from "react";
-import "../styles/signup.css";
-import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import "../styles/auth.css";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-function Signup() {
+const Signup = ({ signupDetails, setSignupDetails }) => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-    email: "",
-    role: "user",
-  });
 
-  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
+    setSignupDetails((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -24,70 +18,92 @@ function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("");
+    setError("");
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/auth/register",
-        formData
+        `${import.meta.env.VITE_BASE_URL}/auth/signup`,
+        {
+          fullname: signupDetails.fullname,
+          email: signupDetails.email,
+          password: signupDetails.password,
+        }
       );
-      setMessage(res.data.message || "Signup successful!");
-      setTimeout(() => {
+
+      if (res.data) {
+        alert("Signup successful!");
         navigate("/");
-      }, 1500);
-    } catch (err) {
-      setMessage(err.response?.data?.message || "Registration failed");
+      }
+    } catch (error) {
+      // Improved error logging
+      console.log("Full error object:", error);
+      console.log("Response data:", error.response?.data);
+
+      setError(
+        error.response?.data?.message ||
+          error.message ||
+          "Signup failed. Please try again."
+      );
     }
   };
 
   return (
-    <div className="app-wrapper">
-      <div className="helpdesk-container">
-        <h1 className="helpdesk-title">Helpdesk System</h1>
-        <h2 className="helpdesk-title">Sign up here</h2>
-
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="email"
-            name="email"
-            placeholder="Email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-          <button type="submit">Sign Up</button>
-
-          <div className="redirect">
-            <Link to="/">Sign In</Link>
+    <div className="auth-container">
+      <div className="auth-card">
+        <h1 className="auth-title">Create Account</h1>
+        {error && <div className="error-message">{error}</div>}
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="fullname">Full Name</label>
+            <input
+              name="fullname"
+              value={signupDetails.fullname}
+              onChange={handleChange}
+              type="text"
+              id="fullname"
+              placeholder="Enter your full name"
+              required
+            />
           </div>
 
-          {message && (
-            <p
-              style={{ marginTop: "15px", fontWeight: "bold", color: "green" }}
-            >
-              {message}
-            </p>
-          )}
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              name="email"
+              value={signupDetails.email}
+              onChange={handleChange}
+              type="email"
+              id="email"
+              placeholder="Enter your email"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              name="password"
+              value={signupDetails.password}
+              onChange={handleChange}
+              type="password"
+              id="password"
+              placeholder="Create a password (min 6 characters)"
+              required
+              minLength={6}
+            />
+          </div>
+
+          <button type="submit" className="auth-btn">
+            Sign Up
+          </button>
         </form>
+
+        <div className="auth-footer">
+          Already have an account? <Link to="/login">Log in</Link>
+        </div>
       </div>
     </div>
   );
-}
+};
 
 export default Signup;

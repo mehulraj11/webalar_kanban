@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Socket.IO Test</title>
+</head>
+<body>
+  <h2>Socket.IO Tester</h2>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script>
+    const socket = io("http://localhost:5000");
+
+    socket.on("connect", () => {
+      console.log("Connected!", socket.id);
+
+      // 🔹 Example: Add Section
+      socket.emit("section:add", { name: "Test from HTML" }, (response) => {
+        console.log("Section added:", response);
+      });
+
+      // 🔹 Example: Get Sections
+      socket.emit("section:get", null, (sections) => {
+        console.log("Sections:", sections);
+      });
+
+      // 🔹 Listen for server broadcast
+      socket.on("section:added", (data) => {
+        console.log("Broadcasted section:", data);
+      });
+    });
+
+    socket.on("error", (err) => {
+      console.error("Server Error:", err);
+    });
+  </script>
+</body>
+</html>

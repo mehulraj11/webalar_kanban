@@ -2,8 +2,8 @@ import UserService from "../services/UserService.js";
 
 export const signup = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    const newUser = await UserService.signup({ name, email, password });
+    const { fullname, email, password, isLogged } = req.body;
+    const newUser = await UserService.signup({ fullname, email, password });
     res.status(201).json(newUser);
   } catch (err) {
     res.status(400).json({ message: err.message || "Error in adding user" });

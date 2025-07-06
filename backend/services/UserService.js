@@ -3,13 +3,12 @@ import jwt from "jsonwebtoken";
 import User from "../models/UserSchema.js";
 
 const UserService = {
-  // Signup
-  signup: async ({ name, email, password }) => {
-    if (!name || typeof name !== "string") {
+  signup: async ({ fullname, email, password }) => {
+    if (!fullname || typeof fullname !== "string") {
       throw new Error("Name must be a string");
     }
 
-    if (!email || !/.+\@.+\..+/.test(email)) {
+    if (!email ) {
       throw new Error("Invalid email format.");
     }
 
@@ -25,15 +24,15 @@ const UserService = {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = new User({
-      name,
+      fullname,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      isLogged: false
     });
 
     return await newUser.save();
   },
 
-  // Login
   login: async (email, password) => {
     if (!email) {
       throw new Error("Email is required.");
@@ -53,18 +52,22 @@ const UserService = {
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
+    await User.updateOne(
+      { _id: user.id },
+      { $set: { isLogged: true } }
+    )
 
     return {
       token,
       user: {
         id: user.id,
-        name: user.name,
-        email: user.email
+        fullname: user.fullname,
+        email: user.email,
+        online: user.isLogged
       }
     };
   },
 
-  // Get user count
   getCount: async () => {
     try {
       return await User.countDocuments();
@@ -73,7 +76,6 @@ const UserService = {
     }
   },
 
-  // Find user by ID
   findById: async (id) => {
     try {
       const user = await User.findById(id);
